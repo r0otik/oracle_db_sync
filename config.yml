@@ -1,0 +1,59 @@
+---
+General:
+  backup_path: ./backup
+  log_file: ./dbSync.log
+
+Connections:
+  pl_db:
+    db_user: USERNAME
+    db_password: testing123
+    db_host: myhostname.test.local
+    db_name: ORCL
+  old:
+    dblink: True
+    scheme_name: newschema
+    postfix: old_database
+    avail_from: pl_db
+  prod:
+    dblink: True
+    postfix: prod
+    avail_from: pl_db
+    
+
+Sync:
+  cmdoff_sync:
+    local_db: pl_db
+    remote_db: old
+    sync_type: truncate
+    backup: True
+    rotate: 3
+    tables:
+      - APN_TESTING: VC_APN
+  prod_sync_trunc:
+    local_db: pl_db
+    remote_db: prod
+    sync_type: truncate
+    backup: True
+    rotate: 1
+    tables:
+      - SWITCHES_GT_TEST: SWITCHES_GT
+        map_columns:
+          ID_NAME: ID
+          DEVICE_ID: DEVICE_ID
+        only_mapped: True
+  prod_sync_diff:
+    local_db: pl_db
+    remote_db: prod
+    sync_type: diff
+    backup: True
+    rotate: 1
+    tables:
+      - STREETS_TEST: STREETS
+        map_columns:
+          ST_NAME: STREET_NAME
+          ST_ENG: STREET_NAME_ENG 
+        diff_key:
+          - ST_NAME
+          - ST_ENG
+          - CITY_ID
+...
